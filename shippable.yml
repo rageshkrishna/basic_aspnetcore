@@ -38,7 +38,7 @@ jobs:
                $DH_USR_NAME=$(shipctl get_integration_resource_field "$env:RES_OUT_IMG" "userName")
                $DH_PASS=$(shipctl get_integration_resource_field "$env:RES_OUT_IMG" "password")
                docker login -u $DH_USR_NAME -p $DH_PASS
-            - docker push $image
+            - docker push "${env:IMG_NAME}:${env:BUILD_NUMBER}"
       - OUT: basic_aspnetcore_image
     on_success:
       script:
