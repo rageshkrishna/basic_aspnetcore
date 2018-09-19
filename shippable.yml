@@ -39,7 +39,7 @@ jobs:
                $env:DOCKER_HOST="tcp://${gateway}:2375"
             - $env:IMG_NAME=$(shipctl get_resource_version_key "$env:RES_OUT_IMG" "sourceName")
             - echo "${env:IMG_NAME}:${env:BUILD_NUMBER}"
-            - docker build -t="${env:IMG_NAME}:${env:BUILD_NUMBER}" .
+            - docker build -t="${env:IMG_NAME}:${env:BUILD_NUMBER}" $(pwd)
             - |
                # Log in to Docker Hub
                $DH_USR_NAME=$(shipctl get_integration_resource_field "$env:RES_OUT_IMG" "userName")
