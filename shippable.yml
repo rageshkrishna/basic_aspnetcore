@@ -28,6 +28,7 @@ jobs:
               env:
                 - DOCKER_ACC: ragesh
                 - DOCKER_REPO: basic_aspnetcore
+                - RES_OUT_IMG: basic_aspnetcore_image
           script:
             - pushd $(shipctl get_resource_state basic_aspnetcore_gitRepo)
             - dotnet restore
@@ -36,10 +37,16 @@ jobs:
                # Set up DOCKER_HOST so we can run a docker build
                $gateway = ((Get-NetRoute | where {$_.DestinationPrefix -eq '0.0.0.0/0'}).NextHop)
                $env:DOCKER_HOST="tcp://${gateway}:2375"
-            - $image = "${env:DOCKER_ACC}/${env:DOCKER_REPO}:${env:BUILD_NUMBER}"
-            - docker build -t="$image" .
+            - $IMG_NAME=$(shipctl get_resource_version_key "$RES_OUT_IMG" "sourceName")
+            - docker build -t="${IMG_NAME}:${BUILD_NUMBER}" .
+            - |
+               # Log in to Docker Hub
+               $DH_USR_NAME=$(shipctl get_integration_resource_field "$RES_OUT_IMG" "userName")
+               $DH_PASS=$(shipctl get_integration_resource_field "$RES_OUT_IMG" "password")
+               docker login -u $DH_USR_NAME -p $DH_PASS
             - docker push $image
-            - shipctl post_resource_state_multi basic_aspnetcore_image "versionName=$image"
       - OUT: basic_aspnetcore_image
-
-
+    on_success:
+      script:
+        # Update OUT resource to create a new version that will trigger rest of the workflow
+        - shipctl put_resource_state_multi "$RES_OUT_IMG" "versionName=$BUILD_NUMBER"
