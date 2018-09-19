@@ -1,0 +1,45 @@
+resources:
+  - name: basic_aspnetcore_gitRepo
+    type: gitRepo
+    integration: dr_gh
+    versionTemplate:
+      sourceName: rageshkrishna/basic_aspnetcore
+      branch: master
+
+  - name: basic_aspnetcore_image
+    type: image
+    integration: drship_dockerhub
+    versionTemplate:
+      sourceName: ragesh/basic_aspnetcore
+      versionName: latest
+
+jobs:
+  - name: build
+    type: runSh
+    integrations:
+      - drship_dockerhub
+    steps:
+      - IN: basic_aspnetcore_gitRepo
+      - TASK:
+          runtime:
+            options:
+              imageName: drydock/w16aspnetcore
+              imageTag: v6.8.4
+              env:
+                - DOCKER_ACC: ragesh
+                - DOCKER_REPO: basic_aspnetcore
+          steps:
+            - pushd $(shipctl get_resource_state basic_aspnetcore_gitRepo)
+            - dotnet restore
+            - dotnet publish -c Release -o out
+            - |
+               # Set up DOCKER_HOST so we can run a docker build
+               $gateway = ((Get-NetRoute | where {$_.DestinationPrefix -eq '0.0.0.0/0'}).NextHop)
+               $env:DOCKER_HOST="tcp://${gateway}:2375"
+            - $image = ${env:DOCKER_ACC}/${env:DOCKER_REPO}:${env:BUILD_NUMBER}
+            - docker build -t="$image" .
+            - docker push $image
+            - shipctl post_resource_state_multi basic_aspnetcore_image "versionName=$image"
+      - OUT: basic_aspnet_core_image
+
+
