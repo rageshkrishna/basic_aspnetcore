@@ -37,16 +37,16 @@ jobs:
                # Set up DOCKER_HOST so we can run a docker build
                $gateway = ((Get-NetRoute | where {$_.DestinationPrefix -eq '0.0.0.0/0'}).NextHop)
                $env:DOCKER_HOST="tcp://${gateway}:2375"
-            - $IMG_NAME=$(shipctl get_resource_version_key "$RES_OUT_IMG" "sourceName")
+            - $IMG_NAME=$(shipctl get_resource_version_key "$env:RES_OUT_IMG" "sourceName")
             - docker build -t="${IMG_NAME}:${BUILD_NUMBER}" .
             - |
                # Log in to Docker Hub
-               $DH_USR_NAME=$(shipctl get_integration_resource_field "$RES_OUT_IMG" "userName")
-               $DH_PASS=$(shipctl get_integration_resource_field "$RES_OUT_IMG" "password")
+               $DH_USR_NAME=$(shipctl get_integration_resource_field "$env:RES_OUT_IMG" "userName")
+               $DH_PASS=$(shipctl get_integration_resource_field "$env:RES_OUT_IMG" "password")
                docker login -u $DH_USR_NAME -p $DH_PASS
             - docker push $image
       - OUT: basic_aspnetcore_image
     on_success:
       script:
         # Update OUT resource to create a new version that will trigger rest of the workflow
-        - shipctl put_resource_state_multi "$RES_OUT_IMG" "versionName=$BUILD_NUMBER"
+        - shipctl put_resource_state_multi "$env:RES_OUT_IMG" "versionName=$BUILD_NUMBER"
