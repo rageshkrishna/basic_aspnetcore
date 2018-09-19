@@ -36,7 +36,7 @@ jobs:
                # Set up DOCKER_HOST so we can run a docker build
                $gateway = ((Get-NetRoute | where {$_.DestinationPrefix -eq '0.0.0.0/0'}).NextHop)
                $env:DOCKER_HOST="tcp://${gateway}:2375"
-            - $image = ${env:DOCKER_ACC}/${env:DOCKER_REPO}:${env:BUILD_NUMBER}
+            - $image = "${env:DOCKER_ACC}/${env:DOCKER_REPO}:${env:BUILD_NUMBER}"
             - docker build -t="$image" .
             - docker push $image
             - shipctl post_resource_state_multi basic_aspnetcore_image "versionName=$image"
