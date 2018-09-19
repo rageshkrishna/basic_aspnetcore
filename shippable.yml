@@ -40,6 +40,6 @@ jobs:
             - docker build -t="$image" .
             - docker push $image
             - shipctl post_resource_state_multi basic_aspnetcore_image "versionName=$image"
-      - OUT: basic_aspnet_core_image
+      - OUT: basic_aspnetcore_image
 
 
