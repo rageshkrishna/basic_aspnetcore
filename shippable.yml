@@ -28,7 +28,7 @@ jobs:
               env:
                 - DOCKER_ACC: ragesh
                 - DOCKER_REPO: basic_aspnetcore
-          steps:
+          script:
             - pushd $(shipctl get_resource_state basic_aspnetcore_gitRepo)
             - dotnet restore
             - dotnet publish -c Release -o out
