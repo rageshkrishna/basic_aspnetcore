@@ -23,20 +23,13 @@ jobs:
       - TASK:
           runtime:
             options:
-              imageName: drydock/w16aspnetcore
-              imageTag: v6.8.4
+              container: false
               env:
                 - DOCKER_ACC: ragesh
                 - DOCKER_REPO: basic_aspnetcore
                 - RES_OUT_IMG: basic_aspnetcore_image
           script:
             - pushd $(shipctl get_resource_state basic_aspnetcore_gitRepo)
-            - dotnet restore
-            - dotnet publish -c Release -o out
-            - |
-               # Set up DOCKER_HOST so we can run a docker build
-               $gateway = ((Get-NetRoute | where {$_.DestinationPrefix -eq '0.0.0.0/0'}).NextHop)
-               $env:DOCKER_HOST="tcp://${gateway}:2375"
             - $env:IMG_NAME=$(shipctl get_resource_version_key "$env:RES_OUT_IMG" "sourceName")
             - echo "${env:IMG_NAME}:${env:BUILD_NUMBER}"
             - docker build -t="${env:IMG_NAME}:${env:BUILD_NUMBER}" $(pwd)
