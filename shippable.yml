@@ -22,8 +22,8 @@ jobs:
       - IN: basic_aspnetcore_gitRepo
       - TASK:
           runtime:
-            options:
-              container: false
+            container: false
+            options:              
               env:
                 - DOCKER_ACC: ragesh
                 - DOCKER_REPO: basic_aspnetcore
